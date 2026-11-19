@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment (API keys) - copy .env.example instead
+.env
+.env.local
+
+# Generated artifacts & reports
+outputs/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# ChromaDB local persistence
+chroma/
+.chroma/
+chroma-data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

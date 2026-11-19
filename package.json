@@ -1,0 +1,56 @@
+{
+  "name": "banking-qa-v2",
+  "version": "0.1.0",
+  "description": "AI-assisted QA automation framework for banking: RAG-driven test generation, compliance checking, and RAGAS evaluation on top of Playwright + Cucumber BDD.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "ts-node main.ts",
+    "test": "playwright test",
+    "test:api": "playwright test tests/api",
+    "test:e2e": "playwright test tests/e2e --grep-invert @heal-demo --pass-with-no-tests",
+    "test:bdd": "cucumber-js",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
+    "rag:ingest": "ts-node src/rag/ingest.ts",
+    "generate:tests": "ts-node src/generators/testGenerator.ts",
+    "analyze:failures": "ts-node src/analysis/failureAnalyzer.ts",
+    "check:compliance": "ts-node src/compliance/complianceChecker.ts",
+    "eval:ragas": "ts-node src/evaluation/ragasEval.ts",
+    "review:pr": "ts-node src/review/prReviewer.ts",
+    "heal:review": "ts-node src/heal/approveHeals.ts"
+  },
+  "keywords": [
+    "qa",
+    "automation",
+    "banking",
+    "playwright",
+    "cucumber",
+    "bdd",
+    "rag",
+    "chromadb",
+    "gemini",
+    "google-genai",
+    "compliance",
+    "ragas"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@google/genai": "^1.52.0",
+    "chromadb": "^1.9.2",
+    "chromadb-default-embed": "^2.14.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.1",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.9.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,205 @@
+BANKING PLATFORM REQUIREMENTS - PAYMENTS, COMPLIANCE AND ONBOARDING
+Version 2.0
+
+Scope: This document sets out the business rules, limits and exact error messages that the online banking platform must enforce. Payment limits, fees, loan criteria and error texts are this bank's internal policy for the test environment. Regulatory sections summarise the obligations the platform must support; they are not a substitute for the regulations themselves.
+
+All amounts are in pounds sterling (GBP). "Daily" means the calendar day from 00:00:00 to 23:59:59 UK time. Daily limits are per customer, across all of the customer's accounts, and count only successful (not rejected) transfers.
+
+=====================================================================
+SECTION 1: IMPS (IMMEDIATE PAYMENT SERVICE) TRANSFERS
+=====================================================================
+
+IMPS-01 IMPS per-transaction limit: A single IMPS transfer must be at least £1.00 and must not exceed £5,000.00. A transfer of exactly £5,000.00 is allowed. A transfer of £5,000.01 or more is rejected with: "IMPS transfers cannot exceed £5,000 per transaction".
+
+IMPS-02 IMPS daily limit: The total of a customer's successful IMPS transfers in one day must not exceed £10,000.00. A transfer that would take the day's IMPS total above £10,000.00 is rejected with: "Daily IMPS limit of £10,000 exceeded". A transfer that brings the total to exactly £10,000.00 is allowed.
+
+IMPS-03 IMPS availability and speed: IMPS is available 24 hours a day, 7 days a week, including weekends and bank holidays. Funds must reach the recipient within 30 seconds. On success the platform shows: "Transfer successful. Reference: <reference number>".
+
+IMPS-04 IMPS fee: IMPS transfers are free of charge.
+
+IMPS-05 IMPS recipient: The recipient account number must be exactly 8 digits and the sort code exactly 6 digits. Otherwise the transfer is rejected with: "Enter a valid 8-digit account number and 6-digit sort code".
+
+=====================================================================
+SECTION 2: NEFT (NATIONAL ELECTRONIC FUNDS TRANSFER) TRANSFERS
+=====================================================================
+
+NEFT-01 NEFT minimum: A single NEFT transfer must be at least £1.00. There is no separate per-transaction maximum other than the daily limit.
+
+NEFT-02 NEFT daily limit: The total of a customer's successful NEFT transfers in one day must not exceed £50,000.00. A transfer that would take the day's NEFT total above £50,000.00 is rejected with: "Daily NEFT limit of £50,000 exceeded". A transfer that brings the total to exactly £50,000.00 is allowed.
+
+NEFT-03 NEFT settlement: NEFT transfers are settled in half-hourly batches between 08:00 and 18:00 on business days. A NEFT transfer submitted outside those hours is accepted and queued for the next batch, and the platform shows: "Your NEFT transfer will be processed in the next settlement window".
+
+NEFT-04 NEFT fee: NEFT transfers are free of charge.
+
+=====================================================================
+SECTION 3: RTGS (REAL TIME GROSS SETTLEMENT) TRANSFERS
+=====================================================================
+
+RTGS-01 RTGS minimum: A single RTGS transfer must be at least £200,000.00. A transfer of exactly £200,000.00 is allowed. A transfer below £200,000.00 is rejected with: "RTGS transfers must be at least £200,000". The platform should suggest NEFT for smaller amounts.
+
+RTGS-02 RTGS maximum: There is no upper limit on RTGS transfers, but any RTGS transfer above £1,000,000.00 requires approval from a second authorised signatory before it is released.
+
+RTGS-03 RTGS hours: RTGS transfers can be submitted between 07:00 and 16:30 on business days. Outside those hours the transfer is rejected with: "RTGS is only available 07:00 to 16:30 on business days".
+
+RTGS-04 RTGS fee: Each RTGS transfer carries a fee of £15.00, shown to the customer before they confirm.
+
+=====================================================================
+SECTION 4: SWIFT (INTERNATIONAL) TRANSFERS
+=====================================================================
+
+SWIFT-01 SWIFT limits: A single SWIFT transfer must be at least £50.00 and must not exceed £25,000.00. The total of a customer's SWIFT transfers in one day must not exceed £50,000.00. Over the per-transaction limit the transfer is rejected with: "SWIFT transfers cannot exceed £25,000 per transaction". Over the daily limit it is rejected with: "Daily SWIFT limit of £50,000 exceeded".
+
+SWIFT-02 SWIFT fee: The SWIFT transfer fee is £25.00 per transfer, charged to the sender. Correspondent bank charges may also be deducted by intermediary banks; the platform must state this before the customer confirms.
+
+SWIFT-03 SWIFT details: A SWIFT transfer needs the recipient's full name, IBAN (or account number for countries without IBAN) and the 8- or 11-character BIC of the recipient's bank. An invalid BIC is rejected with: "Enter a valid 8 or 11 character BIC". An invalid IBAN is rejected with: "Enter a valid IBAN".
+
+SWIFT-04 SWIFT sanctions screening: Every SWIFT transfer is screened against the UK sanctions list before release. A match holds the transfer and shows: "This payment needs further checks. We will contact you within 2 business days".
+
+SWIFT-05 SWIFT exchange rate: The exchange rate and the amount the recipient will receive must be shown before confirmation, and the rate is held for 30 seconds.
+
+=====================================================================
+SECTION 5: AML (ANTI-MONEY LAUNDERING) TRANSACTION FLAGGING
+=====================================================================
+
+AML-01 AML flag threshold: Any single transaction ABOVE £5,000.00, on any payment type, must be flagged for AML review. A transaction of exactly £5,000.00 is not flagged. A flagged transaction is still processed if all other checks pass, and the platform shows: "This transaction has been flagged for AML review".
+
+AML-02 AML structuring detection: Three or more transfers from the same customer in 24 hours, each between £4,500.00 and £5,000.00, must be flagged as possible structuring (splitting payments to stay under the threshold), even though none of them is above £5,000.00 alone.
+
+AML-03 AML rapid movement: Funds received and sent on in full, or nearly in full (90% or more), within 24 hours must be flagged for review.
+
+AML-04 AML high-risk countries: Every SWIFT transfer to or from a country on the UK high-risk third countries list must be flagged for enhanced due diligence, whatever the amount.
+
+AML-05 AML suspicious activity reports: When AML review finds activity is suspicious, the bank's Nominated Officer must decide whether to submit a Suspicious Activity Report (SAR) to the National Crime Agency (NCA). The customer must never be told that a SAR is being considered or has been made (no tipping off). The platform must not show any message to the customer that reveals an AML investigation beyond the standard review notice.
+
+AML-06 AML records: Records of flagged transactions, review outcomes and the reasons for decisions must be kept for at least 5 years from the date of the transaction.
+
+=====================================================================
+SECTION 6: KYC (KNOW YOUR CUSTOMER) DOCUMENT REQUIREMENTS
+=====================================================================
+
+KYC-01 KYC proof of identity: Every new customer must provide one valid photo ID: a current passport, a UK photocard driving licence, or a national identity card from an EEA country. Expired documents are rejected with: "Your identity document has expired. Please upload a valid document".
+
+KYC-02 KYC proof of address: Every new customer must provide one proof of address dated within the last 3 months: a utility bill, a bank or building society statement, a council tax bill, or an HMRC letter. Mobile phone bills are not accepted. A document older than 3 months is rejected with: "Proof of address must be dated within the last 3 months".
+
+KYC-03 KYC identity checks: The platform must run an electronic identity check and a liveness (selfie) check that matches the customer's face to the photo ID. A failed liveness check is rejected with: "We could not verify your identity. Please try again or visit a branch".
+
+KYC-04 KYC sanctions and PEP screening: Every new customer must be screened against the UK sanctions list and politically exposed persons (PEP) lists before an account is opened. A PEP match requires enhanced due diligence, including source of funds and source of wealth, and senior management approval.
+
+KYC-05 KYC periodic review: Customer due diligence must be refreshed every 3 years for standard-risk customers and every year for high-risk customers.
+
+KYC-06 KYC records: Copies of KYC documents and check results must be kept for 5 years after the customer relationship ends.
+
+=====================================================================
+SECTION 7: GDPR DATA RETENTION AND PRIVACY RULES
+=====================================================================
+
+GDPR-01 GDPR storage limitation: Personal data must not be kept longer than needed for the purpose it was collected for. Each category of data must have a documented retention period.
+
+GDPR-02 GDPR retention periods: Transaction records and KYC records: 5 years after the customer relationship ends (required by the Money Laundering Regulations). Records of declined loan applications: 12 months from the decision. Marketing preferences: until the customer withdraws consent. Call recordings: 12 months. Web session and analytics data: 13 months.
+
+GDPR-03 GDPR deletion: When a retention period ends, the data must be deleted or anonymised within 30 days.
+
+GDPR-04 GDPR right of access: A customer's subject access request must be answered within one month of receipt.
+
+GDPR-05 GDPR right to erasure: When a customer asks for erasure, data must be erased unless the bank has a legal obligation to keep it, such as AML record keeping. When erasure is refused for that reason, the platform shows: "We are required by law to keep some of your information. We have deleted everything we are allowed to".
+
+GDPR-06 GDPR data minimisation and masking: Screens and logs must show only the data needed. Account numbers are masked on screen except for the last 4 digits (for example ****5678). Full dates of birth and national insurance numbers must never be written to application logs.
+
+GDPR-07 GDPR breach notification: A personal data breach that is likely to put individuals at risk must be reported to the Information Commissioner's Office (ICO) within 72 hours of the bank becoming aware of it.
+
+=====================================================================
+SECTION 8: PCI DSS CARD DATA RULES
+=====================================================================
+
+PCI-01 PCI DSS sensitive authentication data: The CVV/CVC code, full magnetic stripe or chip data, and PINs must never be stored after a card payment has been authorised, even in encrypted form.
+
+PCI-02 PCI DSS card number display: The card number (PAN) must be masked wherever it is displayed. At most the first 6 and last 4 digits may be shown (for example 412345******1234). Customer screens show only the last 4 digits (for example **** **** **** 1234).
+
+PCI-03 PCI DSS stored card numbers: Any stored PAN must be unreadable, using strong encryption, tokenisation or truncation. Encryption keys must be stored separately from the encrypted data and rotated at least once a year.
+
+PCI-04 PCI DSS transmission: Card data must only be sent over TLS 1.2 or higher. Card data must never be sent by email, chat or SMS.
+
+PCI-05 PCI DSS logs: Full card numbers, CVV codes and PINs must never appear in application logs, error messages, URLs or analytics.
+
+PCI-06 PCI DSS access: Access to card data is limited to staff whose role needs it. Every access to cardholder data must be logged, and audit logs must be kept for at least 12 months, with the last 3 months immediately available.
+
+PCI-07 PCI DSS card entry errors: An invalid card number is rejected with: "Enter a valid card number". An expired card is rejected with: "This card has expired".
+
+=====================================================================
+SECTION 9: LOAN ELIGIBILITY CRITERIA (PERSONAL LOANS)
+=====================================================================
+
+LOAN-01 Loan age and residency: The applicant must be aged 18 to 75 and a UK resident for at least 3 years. Otherwise the application is declined with: "You do not meet our age or residency requirements for this loan".
+
+LOAN-02 Loan minimum salary: The applicant must have a gross annual income of at least £20,000.00. Below this the application is declined with: "Minimum annual income of £20,000 is required".
+
+LOAN-03 Loan credit score: The applicant must have a credit score of at least 650 (on a scale of 0 to 999). A score of exactly 650 is eligible. Below 650 the application is declined with: "We are unable to offer you a loan based on your credit history".
+
+LOAN-04 Loan amounts and terms: Personal loans are from £1,000.00 to £50,000.00, over 12 to 84 months. Amounts outside this range are rejected with: "Loan amount must be between £1,000 and £50,000".
+
+LOAN-05 Loan affordability: Total monthly debt repayments, including the new loan, must not exceed 40% of the applicant's gross monthly income. Otherwise the application is declined with: "This loan is not affordable based on your income and existing commitments".
+
+LOAN-06 Loan employment: The applicant must have been in continuous employment, or self-employed with 2 years of filed accounts, for at least 6 months.
+
+LOAN-07 Loan decision reason: A declined applicant must be told which credit reference agency was used, so they can check their credit file.
+
+=====================================================================
+SECTION 10: ACCOUNT OPENING REQUIREMENTS
+=====================================================================
+
+ACC-01 Account opening eligibility: To open a current account, the applicant must be at least 18 years old and a UK resident, and must pass the KYC checks in Section 6. An applicant under 18 is rejected with: "You must be 18 or over to open this account".
+
+ACC-02 Account opening deposit: There is no minimum opening deposit for a current account. A savings account requires a minimum opening deposit of £1.00.
+
+ACC-03 Account opening limit: A customer may hold at most 3 current accounts with the bank. A request for a fourth is rejected with: "You already have the maximum number of current accounts".
+
+ACC-04 Account opening timing: When all checks pass, the account number and sort code are issued immediately and shown on screen. The debit card is posted within 5 business days.
+
+ACC-05 Account opening duplicates: An application that matches an existing customer's name, date of birth and address is rejected with: "It looks like you already bank with us. Please log in to open another account".
+
+=====================================================================
+SECTION 11: FCA CONDUCT REQUIREMENTS
+=====================================================================
+
+FCA-01 FCA Consumer Duty: Products, prices and communications must deliver good outcomes for retail customers. Fees and charges (such as the RTGS and SWIFT fees) must be shown clearly before the customer commits.
+
+FCA-02 FCA Confirmation of Payee: Before a first payment to a new UK recipient, the platform must check the recipient's name against the account. If the name does not match it shows: "The name you entered does not match this account. Check the details before you continue". If it is a close match it shows the actual account name and asks the customer to confirm.
+
+FCA-03 FCA authorised push payment fraud warnings: A fraud warning must be shown before a first payment to a new recipient and before any payment above £1,000.00 to a new recipient.
+
+FCA-04 FCA strong customer authentication: Logging in and making a payment to a new recipient require strong customer authentication (two of: password, device, biometric). After 5 failed login attempts the account is locked with: "Your account has been locked for security. Call us to unlock it".
+
+FCA-05 FCA complaints: Complaints must be acknowledged promptly, and a final response given within 8 weeks. Payment services complaints must receive a final response within 15 business days, or 35 business days in exceptional circumstances.
+
+FCA-06 FCA vulnerable customers: The platform must let customers record that they need extra support, and staff must be able to see this flag.
+
+=====================================================================
+SECTION 12: GENERAL VALIDATION AND ERROR MESSAGES
+=====================================================================
+
+ERR-01 Amount must be positive: An amount of zero or less on any payment type is rejected with: "Amount must be greater than zero".
+
+ERR-02 Amount format: An amount with more than 2 decimal places, or containing letters, is rejected with: "Enter an amount in pounds and pence, for example 10.50".
+
+ERR-03 Insufficient funds: A transfer larger than the available balance is rejected with: "Insufficient funds for this transfer".
+
+ERR-04 Missing recipient: A transfer with no recipient is rejected with: "Enter the recipient's account details".
+
+ERR-05 Login failure: A wrong email or password shows: "Email or password is incorrect". The message must not say which of the two was wrong.
+
+ERR-06 Session timeout: After 10 minutes of inactivity the session ends and the customer sees: "You have been logged out for your security".
+
+ERR-07 Error message summary:
+- "IMPS transfers cannot exceed £5,000 per transaction" (IMPS-01)
+- "Daily IMPS limit of £10,000 exceeded" (IMPS-02)
+- "Daily NEFT limit of £50,000 exceeded" (NEFT-02)
+- "RTGS transfers must be at least £200,000" (RTGS-01)
+- "SWIFT transfers cannot exceed £25,000 per transaction" (SWIFT-01)
+- "Daily SWIFT limit of £50,000 exceeded" (SWIFT-01)
+- "This transaction has been flagged for AML review" (AML-01)
+- "Proof of address must be dated within the last 3 months" (KYC-02)
+- "Minimum annual income of £20,000 is required" (LOAN-02)
+- "We are unable to offer you a loan based on your credit history" (LOAN-03)
+- "Amount must be greater than zero" (ERR-01)
+- "Insufficient funds for this transfer" (ERR-03)
+- "Email or password is incorrect" (ERR-05)

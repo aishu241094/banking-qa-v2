@@ -12,9 +12,15 @@ jobs:
     name: Typecheck, Lint & Tests
     runs-on: ubuntu-latest
     env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      CLAUDE_MODEL: claude-sonnet-5-5
       CI: true
+      # URL of a deployed test environment of the banking app. Set it as a
+      # repository variable (Settings > Secrets and variables > Actions >
+      # Variables) to run the API, E2E and BDD suites against it. When it is
+      # empty, only the checks that need no running app are run.
+      BASE_URL: ${{ vars.BASE_URL }}
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,20 +37,41 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # --- Checks that need no running app ----------------------------------
+
+      - name: Validate BDD (every Gherkin step has a step definition)
+        run: npx cucumber-js --dry-run --format summary
+
+      - name: Validate Playwright specs load
+        run: npx playwright test --list
+
+      - name: RAG smoke test (requirements load and retrieve, no LLM calls)
+        run: node scripts/autoload-check.cjs
+
+      # --- Suites that need the banking app (only when BASE_URL is set) -----
+
+      - name: Note skipped app tests
+        if: env.BASE_URL == ''
+        run: echo "::notice::BASE_URL repository variable is not set, so the API, E2E and BDD suites were skipped (they need a deployed banking app)."
+
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        if: env.BASE_URL != ''
+        run: npx playwright install --with-deps chromium
 
       - name: Run API tests
+        if: env.BASE_URL != ''
         run: npm run test:api
 
       - name: Run E2E tests
+        if: env.BASE_URL != ''
         run: npm run test:e2e
 
       - name: Run BDD tests
+        if: env.BASE_URL != ''
         run: npm run test:bdd
 
       - name: Upload test artifacts
-        if: always()
+        if: always() && env.BASE_URL != ''
         uses: actions/upload-artifact@v4
         with:
           name: qa-reports

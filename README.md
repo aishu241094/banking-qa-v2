@@ -211,5 +211,5 @@ main.ts              CLI and interactive menu
 
 ## CI
 
-- **`ci.yml`**: typecheck, then the API, E2E and BDD test suites.
+- **`ci.yml`**: on every push and PR, it runs the typecheck, a BDD dry-run (every Gherkin step must have a step definition), a Playwright spec check and a RAG retrieval smoke test. None of these need the app. The API, E2E and BDD suites run only when the repository variable `BASE_URL` points to a deployed test environment of the banking app, because GitHub's runners have no app at `localhost:3000`.
 - **`ai-pr-review.yml`**: runs on every PR. To enable it, add the repository secret `ANTHROPIC_API_KEY` (or `GEMINI_API_KEY` and set the repository variable `LLM_PROVIDER=gemini`).
